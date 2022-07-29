@@ -1,6 +1,12 @@
 const router = require('express').Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-router.post('/register', (req, res) => {
+const checkUserExists = require('../middleware/checkUserExists');
+const checkUserNotTaken = require('../middleware/checkUserNotTaken');
+const checkPayload = require('../middleware/checkPayload');
+
+router.post('/register', checkPayload, checkUserNotTaken, (req, res, next) => {
   res.end('implement register, please!');
   /*
     IMPLEMENT
