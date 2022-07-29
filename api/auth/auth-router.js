@@ -8,8 +8,13 @@ const checkUserExists = require('../middleware/checkUserExists');
 const checkUserNotTaken = require('../middleware/checkUserNotTaken');
 const checkPayload = require('../middleware/checkPayload');
 
+router.get('/', (req, res) => {
+  res.json({ message: 'auth router is up' })
+})
+
 router.post('/register', checkPayload, checkUserNotTaken, (req, res, next) => {
-    const hash = bcrypt.hashSync(req.body.password, 0)
+  const { username, password } = req.body;  
+  const hash = bcrypt.hashSync(req.body.password, 0)
     Users.create({ username, password: hash })
       .then(user => {
         res.status(201).json(user)

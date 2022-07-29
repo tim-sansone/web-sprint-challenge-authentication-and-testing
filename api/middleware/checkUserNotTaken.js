@@ -2,7 +2,7 @@ const Users = require('../users/users-model');
 
 function checkUserNotTaken(req, res, next) {
     const { username } = req.body;
-    Users.getBy({ username })
+    Users.getBy({ username }).first()
         .then(user => {
             if(user == null){
                 next()

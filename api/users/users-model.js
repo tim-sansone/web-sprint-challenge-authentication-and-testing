@@ -13,8 +13,13 @@ function getById(id) {
 }
 
 async function create(user) {
-    const [id] = await db('users').insert(user);
-    return getById(id);
+    try {
+        const [id] = await db('users').insert(user);
+        return getById(id);
+    } catch(err) {
+        throw(err)
+    }
+    
 }
 
 async function update(id, changes) {
