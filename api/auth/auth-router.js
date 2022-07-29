@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../secrets');
 
 const Users = require('../users/users-model');
 
@@ -53,11 +54,20 @@ router.post('/login', checkPayload, checkUserExists, (req, res, next) => {
       next({ status: 400, message: 'invalid credentials' })
       return
     }
+    const token = generateToken(req.user)
     res.status(200).json({
       message: `welcome, ${req.user.username}`,
-      token: 'token'
+      token
     })
 });
+
+const generateToken = user => {
+  const payload = {
+    subject: user.id,
+    username: user.username
+  }
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' })
+}
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
