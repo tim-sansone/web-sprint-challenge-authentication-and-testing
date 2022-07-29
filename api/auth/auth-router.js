@@ -48,7 +48,7 @@ router.post('/register', checkPayload, checkUserNotTaken, (req, res, next) => {
   */
 
 
-router.post('/login', (req, res) => {
+router.post('/login', checkPayload, checkUserExists, (req, res, next) => {
   res.end('implement login, please!');
   /*
     IMPLEMENT
