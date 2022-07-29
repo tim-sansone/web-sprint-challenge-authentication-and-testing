@@ -49,7 +49,15 @@ router.post('/register', checkPayload, checkUserNotTaken, (req, res, next) => {
 
 
 router.post('/login', checkPayload, checkUserExists, (req, res, next) => {
-  res.end('implement login, please!');
+    if(!bcrypt.compareSync(req.body.password, req.user.password)){
+      next({ status: 400, message: 'invalid credentials' })
+      return
+    }
+    res.status(200).json({
+      message: `welcome, ${req.user.username}`,
+      token: 'token'
+    })
+});
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -73,6 +81,6 @@ router.post('/login', checkPayload, checkUserExists, (req, res, next) => {
     4- On FAILED login due to `username` not existing in the db, or `password` being incorrect,
       the response body should include a string exactly as follows: "invalid credentials".
   */
-});
+
 
 module.exports = router;

@@ -2,10 +2,10 @@ const Users = require('../users/users-model');
 
 function checkUserExists(req, res, next) {
     const { username } = req.body;
-    Users.getBy({ username })
+    Users.getBy({ username }).first()
         .then(user => {
             if(user == null){
-                next({ status: 404, message: 'user does not exist' })
+                next({ status: 404, message: 'invalid credentials' })
                 return
             }
             req.user = user
