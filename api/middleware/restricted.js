@@ -17,6 +17,8 @@ module.exports = (req, res, next) => {
       next()
     }
   })
+};
+
   /*
     IMPLEMENT
 
@@ -28,4 +30,4 @@ module.exports = (req, res, next) => {
     3- On invalid or expired token in the Authorization header,
       the response body should include a string exactly as follows: "token invalid".
   */
-};
+

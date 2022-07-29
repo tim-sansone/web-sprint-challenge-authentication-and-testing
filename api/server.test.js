@@ -1,6 +1,9 @@
+const request = require('supertest');
+
 const db = require('../data/dbConfig');
+const server = require('./server')
+
 const Users = require('./users/users-model');
-const Jokes = require('./jokes/jokes-model');
 
 
 test('sanity', () => {
@@ -75,16 +78,80 @@ describe('users model', () => {
   });
 })
 
-describe('jokes model', () => {
-  test('getAll', async () => {
-    let result = await Jokes.getAll();
-    expect(result).toHaveLength(3);
-    expect(result[0]).toMatchObject({ joke: "I'm tired of following my dreams. I'm just going to ask them where they are going and meet up with them later."});
+describe('registration endpoint', () => {
+  test('returns correct information on successful registration', async () => {
+    let result = await request(server).post('/api/auth/register').send({ username: 'bob', password: '1234' });
+    expect(result.body).toMatchObject({ id: 3, username: 'bob' });
+    expect(result.body).toHaveProperty('password');
+    expect(result.status).toBe(201)
+  })
+
+  test('returns correct error message on missing username or password', async () => {
+    let result = await request(server).post('/api/auth/register').send({ username: 'bob' })
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('username and password required');
+
+    result = await request(server).post('/api/auth/register').send({ password: '1234' })
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('username and password required');
+  })
+
+  test('returns correct error message on username taken', async () => {
+    let result = await request(server).post('/api/auth/register').send({ username: 'tim', password: '1234' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('username taken');
   })
 })
 
-describe('auth router', () => {
-  test('register', () => {
-    
+describe('login endpoint', () => {
+  test('returns correct information on successful login', async () => {
+    let result = await request(server).post('/api/auth/login').send({ username: 'tim', password: '1234' });
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({ message: 'welcome, tim' });
+    expect(result.body).toHaveProperty('token');
   })
-})
+
+  test('returns correct error message on missing username or password', async () => {
+    let result = await request(server).post('/api/auth/login').send({ username: 'bob' })
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('username and password required');
+
+    result = await request(server).post('/api/auth/login').send({ password: '1234' })
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('username and password required');
+  })
+
+  test('returns correct error message on username not exist or bad password', async () => {
+    let result = await request(server).post('/api/auth/login').send({ username: 'bob', password: '1234' })
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('invalid credentials');
+
+    result = await request(server).post('/api/auth/login').send({ username: 'tim', password: '2345' })
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('invalid credentials');
+  });
+});
+
+describe('jokes endpoint', () => {
+  test('on valid token, returns jokes', async () => {
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJqZWN0IjoxLCJ1c2VybmFtZSI6InRpbSIsImlhdCI6MTY1OTEyMTQ1NiwiZXhwIjoxNjU5MTUwMjU2fQ.EbbxDtBI3zSOldj86CrjCqdUINe1TTN-T_Z4jcdz92E"
+    let result = await request(server).get('/api/jokes').set('authorization', token);
+    expect(result.body).toHaveLength(3);
+    expect(result.body[0]).toEqual({
+      "id": "0189hNRf2g",
+      "joke": "I'm tired of following my dreams. I'm just going to ask them where they are going and meet up with them later."
+    });
+  });
+
+  test('correct error message on missing token', async () => {
+    let result = await request(server).get('/api/jokes');
+    expect(result.status).toBe(401);
+    expect(result.body.message).toBe('token required');
+  });
+
+  test('correct error message on invalid token', async () => {
+    let result = await request(server).get('/api/jokes').set('authorization', 'please let me in!');
+    expect(result.status).toBe(401);
+    expect(result.body.message).toBe('token invalid');
+  })
+});

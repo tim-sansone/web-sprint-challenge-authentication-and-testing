@@ -5,7 +5,7 @@ function checkUserExists(req, res, next) {
     Users.getBy({ username }).first()
         .then(user => {
             if(user == null){
-                next({ status: 404, message: 'invalid credentials' })
+                next({ status: 400, message: 'invalid credentials' })
                 return
             }
             req.user = user

@@ -8,7 +8,7 @@ function checkUserNotTaken(req, res, next) {
                 next()
                 return
             }
-            next({ status: 404, message: 'username taken' })
+            next({ status: 400, message: 'username taken' })
         })
         .catch(next)
 }
